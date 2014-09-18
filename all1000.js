@@ -3,34 +3,6 @@
 var All1000 = function () {
   this.turn = 0;
   this.worker = 0;
-  this.techTree = {
-    "a" : { "cost": {                }, "count": 10, "amount": 1000000, "auto": { "count": 0, cost: { "a" :10 } }, "time":  1 },
-    "b" : { "cost": { "a": 1         }, "count": 10, "amount":   -1,    "auto": { "count": 0, cost: { "b" :10 } }, "time":  2 },
-    "c" : { "cost": { "a": 1, "b": 1 }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "c" :10 } }, "time":  3 },
-    "d" : { "cost": { "c": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "d" :10 } }, "time":  4 },
-    "e" : { "cost": { "d": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "e" :10 } }, "time":  5 },
-    "f" : { "cost": { "e": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "f" :10 } }, "time":  6 },
-    "g" : { "cost": { "f": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "g" :10 } }, "time":  7 },
-    "h" : { "cost": { "g": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "h" :10 } }, "time":  8 },
-    "i" : { "cost": { "h": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "i" :10 } }, "time":  9 },
-    "j" : { "cost": { "i": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "j" :10 } }, "time": 10 },
-    "k" : { "cost": { "j": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "k" :10 } }, "time": 11 },
-    "l" : { "cost": { "k": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "l" :10 } }, "time": 12 },
-    "m" : { "cost": { "l": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "m" :10 } }, "time": 13 },
-    "n" : { "cost": { "m": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "n" :10 } }, "time": 14 },
-    "o" : { "cost": { "n": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "o" :10 } }, "time": 15 },
-    "p" : { "cost": { "o": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "p" :10 } }, "time": 16 },
-    "q" : { "cost": { "p": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "q" :10 } }, "time": 17 },
-    "r" : { "cost": { "q": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "r" :10 } }, "time": 18 },
-    "s" : { "cost": { "r": 1         }, "count": 10, "amount":   -1, "auto": { "count": 0, cost: { "s" :10 } }, "time": 19 },
-    "t" : { "cost": { "s": 1         }, "count": 10000000000000, "amount":   -1, "auto": { "count": 0, cost: { "t" :10 } }, "time": 61 },
-    "u" : { "cost": { "t": 1         }, "count": 1000000000000, "amount":   -1, "auto": { "count": 0, cost: { "u" :10 } }, "time": 100 },
-    "v" : { "cost": { "u": 1         }, "count": 100000000000, "amount":   -1, "auto": { "count": 0, cost: { "v" :10 } }, "time": 601 },
-    "w" : { "cost": { "v": 1         }, "count": 10000000000, "amount":   -1, "auto": { "count": 0, cost: { "w" :10 } }, "time": 600 },
-    "x" : { "cost": { "w": 1         }, "count": 1000000000, "amount":   -1, "auto": { "count": 0, cost: { "x" :10 } }, "time": 24 },
-    "y" : { "cost": { "x": 1         }, "count": 100000000, "amount":   -1, "auto": { "count": 0, cost: { "y" :10 } }, "time": 25 },
-    "z" : { "cost": { "y": 1         }, "count": 1000000, "amount":   -1, "auto": { "count": 0, cost: { "z" :10 } }, "time": 26 }
-  };
   this.techTree = this.createTechTree();
 
   this.history = "";
