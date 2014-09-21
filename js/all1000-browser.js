@@ -1,12 +1,14 @@
 // all1000-browser.js http://all1000.com/
 
 All1000.prototype.displayScreen = function () {
-  document.getElementById("screen").innerHTML = all1000.getDisplayText();
+  document.getElementById("screen").innerHTML = all1000.getDisplayText().replace(/\{(#.{6})-fg\}(.*?)\{\/\1-fg\}/g, function (str, p1, p2) {
+    return '<span style="color: ' + p1 + '">' + p2 + '</span>';
+  });
 };
 
 var all1000 = new All1000();
 
-document.write('<pre id="title">all1000 v' + All1000.VERSION + ' #' + All1000.seed  + '\na-z - ++add worker, A-Z - ++remove worker, ! - launch, @ - death</pre>');
+document.write('<pre id="title">all1000 v' + All1000.VERSION + ' #' + All1000.seed  + '\na-z - ++add worker, A-Z - ++remove worker</pre>');
 document.write('<pre id="screen"></pre>');
 
 document.body.onkeypress = function (e) {

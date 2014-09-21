@@ -6,11 +6,40 @@ var All1000 = function () {
   this.techTree = this.createTechTree();
 
   this.history = "";
+  this.availableOrder = "z";
   this._updateCostString();
-  this.end = false;
 };
 
 All1000.VERSION = "0.0.1";
+
+All1000.colors = {
+  "a": "#cc0000",
+  "b": "#00cc00",
+  "c": "#0000cc",
+  "d": "#cc00cc",
+  "e": "#cccc00",
+  "f": "#00cccc",
+  "g": "#cccccc",
+  "h": "#cc0000",
+  "i": "#00cc00",
+  "j": "#0000cc",
+  "k": "#cc00cc",
+  "l": "#cccc00",
+  "m": "#00cccc",
+  "n": "#cccccc",
+  "o": "#cc0000",
+  "p": "#00cc00",
+  "q": "#0000cc",
+  "r": "#cc00cc",
+  "s": "#cccc00",
+  "t": "#00cccc",
+  "u": "#cccccc",
+  "v": "#cc0000",
+  "w": "#00cc00",
+  "x": "#0000cc",
+  "y": "#cc00cc",
+  "z": "#000000"
+};
 
 // the initial seed
 All1000.seed = Math.floor(Math.random() * 10000);
@@ -26,24 +55,45 @@ All1000.seededRandom = function(max, min) {
   var rnd = All1000.seed / 233280;
 
   return min + rnd * (max - min);
-}
+};
 
 All1000.prototype.createTechTree = function () {
   var tech_tree = {};
-  var amount = 1000000;
   All1000.DISP_ORDER.forEach(function (key, order) {
-    var cost, amount, time, cost_time = 1000;
-    while (cost_time >= (1 + order) * 2) {
+    var cost, amount, time, max_cost_time = 0, max_val = 2, cost_time = 0;
+    if (order == 0) {
+      max_cost_time += 100;
+    } else if (order < 10) {
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 1)]._costTime;
+      max_cost_time += order + 1;
+    } else if (order < 20) {
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 1)]._costTime;
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 2)]._costTime;
+      max_cost_time += order + 1;
+    } else {
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 1)]._costTime;
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 2)]._costTime;
+      max_cost_time += tech_tree[String.fromCharCode(key.charCodeAt(0) - 3)]._costTime;
+      max_cost_time += order + 1;
+    }
+    while (cost_time == 0 || max_cost_time <= cost_time) {
+      cost_time = 0;
       cost = {};
-      cost_depends = All1000.DISP_ORDER[Math.floor(All1000.seededRandom(order, 0))];
-      if (cost_depends != key) {
-        cost[cost_depends] = Math.floor(All1000.seededRandom((1 + order) * 1, 0)) + 1;
-        amount = -1;
-      } else {
-        amount = 1000000;
+      amount = 1234567890; // temporary: updated later
+      var dep_num = order == 0 ? 0 : order < 10 ? 1 : order < 20 ? 2 : 3;
+      for (var i = 0; i < dep_num; ++i) {
+        cost_depends = false;
+        while (!cost_depends || cost[cost_depends]) {
+          cost_depends = All1000.DISP_ORDER[Math.floor(All1000.seededRandom(order, Math.max( 0, order - 5 )))];
+        }
+        if (cost_depends != key) {
+          cost[cost_depends] = Math.floor(All1000.seededRandom((1 + order) * 1, 0)) + 1;
+          cost_time += tech_tree[cost_depends]._costTime * cost[cost_depends];
+          amount = -1;
+        }
       }
       time = Math.floor(All1000.seededRandom((1 + order) * 1, 0)) + 1;
-      cost_time = (cost_depends != key ? tech_tree[cost_depends]._costTime * cost[cost_depends] : 1) * time;
+      cost_time += time;
     }
 
     tech_tree[key] = {
@@ -57,16 +107,31 @@ All1000.prototype.createTechTree = function () {
       "_costTime": cost_time
     };
   });
+
+  var cost_tmp = {};
+  All1000.DISP_ORDER.concat().reverse().forEach(function (key, order) {
+    var tech_tree_key = tech_tree[key];
+    var num = 1000 + (cost_tmp[key] || 0);
+    for (var cost_key in tech_tree_key.cost) {
+      cost_tmp[cost_key] = (cost_tmp[cost_key] || 0);
+      cost_tmp[cost_key] += tech_tree_key.cost[cost_key] * num;
+    }
+    if (tech_tree[key].amount != -1) {
+      tech_tree[key].amount = num * 2;
+    }
+  });
   return tech_tree;
 };
 
 
 All1000.prototype.next = function () {
-  if (this.end) {
+  if (All1000.DISP_ORDER.every(function (key) { return this.techTree[key].count >= 1 }, this)) {
+    alert("win");
     return true;
   }
-  ++this.turn;
-  ++this.worker;
+  if (++this.turn % 10 == 1) {
+    ++this.worker;
+  }
   this._resolveAuto();
 };
 
@@ -79,6 +144,9 @@ All1000.prototype._resolveAuto = function () {
       if (tech_tree_key.autoNow.time == 0) {
         tech_tree_key.count += tech_tree_key.autoNow.count;
         tech_tree_key.autoNow = "";
+        if (this.availableOrder.charCodeAt(0) < key.charCodeAt(0) + 1) {
+          this.availableOrder = String.fromCharCode(key.charCodeAt(0) + 1);
+        }
       }
     }
     if (!tech_tree_key.autoNow && tech_tree_key.auto.count > 0) {
@@ -140,12 +208,16 @@ All1000.prototype._updateTechTreeAvailable = function () {
   });
 };
 
+All1000.stripTags = function (str) {
+  return str.replace(/\{\/?.{7}-fg\}/g, "");
+};
+
 All1000.prototype._updateCostString = function () {
   var tech_tree = this.techTree;
   var max_cost_length = 0;
   All1000.DISP_ORDER.forEach(function (key) {
     var tech_tree_key = tech_tree[key];
-    max_cost_length = Math.max(max_cost_length, All1000.cost2string(tech_tree_key.cost).length);
+    max_cost_length = Math.max(max_cost_length, All1000.stripTags(All1000.cost2string(tech_tree_key.cost)).length);
   });
 
   All1000.DISP_ORDER.forEach(function (key) {
@@ -154,40 +226,15 @@ All1000.prototype._updateCostString = function () {
   });
 };
 
-All1000.IS_AUTOMATE = /^[a-z]$/;
-All1000.IS_AUTOMATE_SELL = /^[A-Z]$/;
-All1000.IS_END = "!";
-All1000.prototype.inputKey = function (input_str) {
-  var match;
-  // a-z
-  if (match = All1000.IS_AUTOMATE.exec(input_str)) {
-    var key = match[0];
-    if (this.worker > 0) {
-      ++this.techTree[key].auto.count;
-      --this.worker;
-    }
-
-  // A-Z
-  } else if (match = All1000.IS_AUTOMATE_SELL.exec(input_str)) {
-    var key = match[0];
-    var tech_tree_key = this.techTree[key.toLowerCase()];
-    if (tech_tree_key.auto.count > 0) {
-      --tech_tree_key.auto.count;
-      ++this.worker;
-    }
-  // !
-  } else if (All1000.IS_END == input_str) {
-    if (All1000.DISP_ORDER.every(function (key) { return this.techTree[key].count >= 1000 }, this)) {
-      this.end = true;
-      alert("win");
-    }
+All1000.cost2string = function (cost, max) {
+  var str = JSON.stringify(cost).replace(/"/g, "").replace(/(\w):(\d+)/g, function (str, p1, p2) {
+    return "{" + All1000.colors[p1] + "-fg}" + p1 + ":" + p2 + "{/" + All1000.colors[p1] + "-fg}";
+  });
+  for (var i = All1000.stripTags(str).length; i < max; ++i) {
+    str += " ";
   }
+  return str;
 };
-
-
-All1000.DISP_ORDER = [
-  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
-];
 
 All1000.time2string = function (time) {
   if (time < 10) {
@@ -213,7 +260,7 @@ All1000.time2string2 = function (time) {
   }
   sec = tmp;
 
-  return day + "d" + (hour < 10 ? " " : "") + hour + "h" + (min < 10 ? " " : "") + min + "m" + (sec < 10 ? " " : "") + sec + "s";
+  return (day < 100 ? (day < 10 ? "  " : " ") : "") + day + "d" + (hour < 10 ? " " : "") + hour + "h" + (min < 10 ? " " : "") + min + "m" + (sec < 10 ? " " : "") + sec + "s";
 };
 
 All1000.number2string = function (number) {
@@ -255,30 +302,57 @@ All1000.number2string = function (number) {
   return Math.floor(number / 1000000000000000) + "P";
 };
 
-All1000.cost2string = function (cost, max) {
-  var str = JSON.stringify(cost).replace(/"/g, "");
-  for (var i = str.length; i < max; ++i) {
-    str += " ";
+
+
+All1000.IS_AUTOMATE = /^[a-z]$/;
+All1000.IS_AUTOMATE_SELL = /^[A-Z]$/;
+All1000.prototype.inputKey = function (input_str) {
+  var match;
+  // a-z
+  if (match = All1000.IS_AUTOMATE.exec(input_str)) {
+    var key = match[0];
+    if (key <= this.availableOrder && this.worker > 0) {
+      ++this.techTree[key].auto.count;
+      --this.worker;
+    }
+
+  // A-Z
+  } else if (match = All1000.IS_AUTOMATE_SELL.exec(input_str)) {
+    var key = match[0];
+    var tech_tree_key = this.techTree[key.toLowerCase()];
+    if (tech_tree_key.auto.count > 0) {
+      --tech_tree_key.auto.count;
+      ++this.worker;
+    }
   }
-  return str;
 };
+
+All1000.DISP_ORDER = [
+  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"
+];
 
 All1000.prototype.getDisplayText = function () {
   this._updateTechTreeAvailable();
   var result = "@ " + All1000.number2string(this.worker) + "/" + All1000.time2string2(this.turn) + "\n";
   var tech_tree = this.techTree;
+  var available = true;
+  var available_order = this.availableOrder;
   All1000.DISP_ORDER.forEach(function (key, order) {
     var tech_tree_key = tech_tree[key];
-    result += key + " " + All1000.number2string(tech_tree_key.count)
+    if (!available) {
+      return;
+    } else if (available_order == key) {
+      available = false;
+    }
+    result += "{" + All1000.colors[key] + "-fg}" + key + "{/" + All1000.colors[key] + "-fg} " + All1000.number2string(tech_tree_key.count)
       + "(" + All1000.number2string(tech_tree_key.available) + ")+"
       + All1000.number2string(tech_tree_key.auto.count) + "/"
       + All1000.time2string(tech_tree_key.autoNow ? tech_tree_key.autoNow.time : tech_tree_key.time) + "/"
       + All1000.time2string(tech_tree_key.time) + tech_tree_key.costString + All1000.time2string2(tech_tree_key._costTime)
       + "|";
-    //if (order < 10) {
-    //  result += order + " " + All1000.number2string(tech_tree_key.count) +  "(" + All1000.number2string(tech_tree_key.available) + ")"
-    //  + All1000.time2string(tech_tree_key.time) + tech_tree_key.costString + "|";
-    //}
+    if (order < 10) {
+      result += order + " " + All1000.number2string(tech_tree_key.count) + tech_tree_key.costString + "|";
+    }
     result += "\n";
   });
   return result;
